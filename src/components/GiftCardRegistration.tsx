@@ -19,8 +19,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
     store: '',
     amount: '',
     expiryDate: '',
-    qrCode: '',
-    barcode: ''
+    image: ''
   });
 
   const stores = [
@@ -41,8 +40,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
       store: formData.store,
       amount: parseInt(formData.amount),
       expiryDate: formData.expiryDate,
-      qrCode: formData.qrCode || undefined,
-      barcode: formData.barcode || undefined,
+      image: formData.image || undefined,
       isUsed: false
     };
 
@@ -54,6 +52,18 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        handleInputChange('image', result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -79,12 +89,38 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
             <div className="space-y-2">
               <Label>기프티콘 이미지</Label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600">이미지를 드래그하거나 클릭하여 업로드</p>
-                <Button type="button" variant="outline" className="mt-2">
-                  파일 선택
-                </Button>
+                {formData.image ? (
+                  <div className="space-y-4">
+                    <img 
+                      src={formData.image} 
+                      alt="기프티콘 미리보기" 
+                      className="max-h-32 mx-auto rounded"
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => handleInputChange('image', '')}
+                    >
+                      이미지 변경
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-600">이미지를 드래그하거나 클릭하여 업로드</p>
+                    <Button type="button" variant="outline" className="mt-2" onClick={() => document.getElementById('file-input')?.click()}>
+                      파일 선택
+                    </Button>
+                  </>
+                )}
               </div>
+              <input
+                id="file-input"
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
             </div>
 
             {/* 기프티콘 이름 */}
@@ -121,6 +157,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
               <Input 
                 id="amount"
                 type="number"
+                step="1000"
                 placeholder="10000"
                 value={formData.amount}
                 onChange={(e) => handleInputChange('amount', e.target.value)}
@@ -139,28 +176,6 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
                 />
                 <Calendar className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
               </div>
-            </div>
-
-            {/* QR코드 */}
-            <div className="space-y-2">
-              <Label htmlFor="qrCode">QR코드 (선택)</Label>
-              <Input 
-                id="qrCode"
-                placeholder="QR코드 정보를 입력하세요"
-                value={formData.qrCode}
-                onChange={(e) => handleInputChange('qrCode', e.target.value)}
-              />
-            </div>
-
-            {/* 바코드 */}
-            <div className="space-y-2">
-              <Label htmlFor="barcode">바코드 (선택)</Label>
-              <Input 
-                id="barcode"
-                placeholder="바코드 번호를 입력하세요"
-                value={formData.barcode}
-                onChange={(e) => handleInputChange('barcode', e.target.value)}
-              />
             </div>
 
             {/* 버튼 */}
