@@ -1,73 +1,136 @@
-# Welcome to your Lovable project
+# 기프티콘 및 쿠폰 관리 서비스
 
-## Project info
+[배포 URL](https://gift-find-go.lovable.app/)
 
-**URL**: https://lovable.dev/projects/c2d1f23f-e2fd-4ab3-b018-eaa9cbca667e
+## **📌 사용자**
 
-## How can I edit this code?
+|  |  |
+| --- | --- |
+| 정의 | 기프티콘이나 쿠폰을 가진 사람 |
+| 겪고있는 문제 | 기프티콘이 있는지 기억하기 어려워서 유효기간이 지날때까지 안 쓰거나 굳이 지출을 하게됨 |
+| 니즈 | 여러 사용처의 기프티콘을 한 군데서 관리 |
+|     | 만료 임박 기프티콘 알림 |
+|     | 근처에 사용 가능한 매장이 있을 때 알림 |
 
-There are several ways of editing your application.
+## **📌 페르소나**
 
-**Use Lovable**
+|  |  |
+| --- | --- |
+| 이름 | 김민수 |
+| 나이 | 21세 |
+| 목표 | 기프티콘이 있다는 것을 까먹지 않고 사용하기 |
+| 니즈 | 여러 사용처의 기프티콘을 한 군데서 관리 |
+|     | 만료 임박 기프티콘 알림 |
+|     | 근처에 사용 가능한 매장이 있을 때 알림 |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c2d1f23f-e2fd-4ab3-b018-eaa9cbca667e) and start prompting.
+## **📌 시나리오**
 
-Changes made via Lovable will be committed automatically to this repo.
+### **기프티콘 사용자 시나리오 1**
 
-**Use your preferred IDE**
+- **목표**: 기프티콘을 관리 앱에 등록하기
+- **시나리오**:
+    - 김민수는 기프티콘 등록을 위해 기프티콘 관리 앱을 실행합니다.
+    - 메인 화면에서 `기프티콘 등록` 을 선택합니다.
+    - 사진첩에서 기프티콘의 이미지를 선택합니다.
+    - 기프티콘의 사용처와 만료 일자를 선택합니다.
+    
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### **기프티콘 사용자 시나리오 2**
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **목표**: 기프티콘이 있다는 것을 까먹지 않고 사용하기
+- **시나리오**:
+    - 편의점에 도착한 김민수는 기프티콘 관리 앱으로부터 기프티콘이 있다는 알림을 받습니다.
+    - 알림을 눌러 들어간 화면에서 기프티콘의 바코드 또는 QR코드를 확인합니다.
+    - 기프티콘을 이용해 상품을 구매한 후 `사용 완료`를 선택합니다.
 
-Follow these steps:
+### **기프티콘 사용자 시나리오 3**
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- **목표**: 만료가 임박한 기프티콘에 대해 리마인드시키기
+- **시나리오**:
+    - 김민수는 기프티콘 관리 앱으로부터 만료가 임박한 기프티콘이 있다는 알림을 받습니다.
+    - 알림을 눌러 들어간 화면에서 기프티콘을 확인합니다.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+| 페르소나 | 시나리오 | 요구사항 |
+| --- | --- | --- |
+| 사용자 | • 김민수는 기프티콘 등록을 위해 기프티콘 관리 앱을 실행합니다. | 1. 기프티콘 등록 기능 |
+|      | • 메인 화면에서 `기프티콘 등록` 을 선택합니다. |  |
+|      |• 사진첩에서 기프티콘의 이미지를 선택합니다. |  |
+|      |• 기프티콘의 사용처와 만료 일자를 선택합니다. |  |
+|      |                                   |  |
+| 사용자 | ◦ 편의점에 도착한 김민수는 기프티콘 관리 앱으로부터 기프티콘이 있다는 알림을 받습니다. | 1. 실시간 위치 확인 기능 |
+|      | ◦ 알림을 눌러 들어간 화면에서 기프티콘의 바코드 또는 QR코드를 확인합니다. | 2. 기프티콘 사용처 위치 확인 기능 |
+|      | ◦ 기프티콘을 이용해 상품을 구매한 후 `사용 완료`를 선택합니다. | 3. 푸시 알림 기능 |
+|      |                                   |  |
+| 사용자 | • 김민수는 기프티콘 관리 앱으로부터 만료가 임박한 기프티콘이 있다는 알림을 받습니다. | 1. 자동 날짜 확인 기능 |
+|      | • 알림을 눌러 들어간 화면에서 기프티콘을 확인합니다. | 2. 푸시 알림 기능
 
-# Step 3: Install the necessary dependencies.
-npm i
+## **📌 사용자 스토리와 인수 조건**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### ✅ **요구사항 1: 기프티콘 등록 기능**
 
-**Edit a file directly in GitHub**
+- **사용자 스토리**:
+    
+    *나는 기프티콘을 가진 사람으로서, 기프티콘을 잊지 않고 사용하기 위해 앱에 기프티콘을 등록하고 싶다.*
+    
+- **인수 조건**:
+    - **Given**: 사용자가 기프티콘 관리 앱을 실행하고, 등록 화면에 접근합니다.
+    - **When**: 사용자가 사진첩에서 기프티콘 이미지를 선택하고, 사용처와 만료 일자를 입력합니다.
+    - **Then**: 기프티콘이 앱에 등록되고, 목록에서 확인할 수 있습니다.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+### ✅ **요구사항 2: 실시간 위치 기반 푸시 알림 기능**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **사용자 스토리**:
+    
+    *나는 기프티콘을 가진 사람으로서, 근처에서 사용할 수 있는 기프티콘이 있을 때 알림을 받아 잊지 않고 사용하고 싶다.*
+    
+- **인수 조건**:
+    - **Given**: 사용자가 기프티콘을 등록하고 앱에 위치 접근 권한을 부여했습니다.
+    - **When**: 사용자가 등록된 사용처 근처에 도착합니다.
+    - **Then**: 앱은 사용자에게 해당 장소에서 사용할 수 있는 기프티콘이 있다는 푸시 알림을 보냅니다.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+### ✅ **요구사항 3: 바코드/QR코드 확인 기능**
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **사용자 스토리**:
+    
+    *나는 기프티콘을 가진 사람으로서, 매장에서 바로 기프티콘을 사용할 수 있도록 바코드나 QR코드를 쉽게 확인하고 싶다.*
+    
+- **인수 조건**:
+    - **Given**: 사용자가 알림을 통해 기프티콘 상세 화면에 접근합니다.
+    - **When**: 사용자가 상세 화면에서 바코드/QR코드 확인 버튼을 누릅니다.
+    - **Then**: 기프티콘의 바코드 혹은 QR코드가 표시됩니다.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/c2d1f23f-e2fd-4ab3-b018-eaa9cbca667e) and click on Share -> Publish.
+### ✅ **요구사항 4: 사용 완료 기능**
 
-## Can I connect a custom domain to my Lovable project?
+- **사용자 스토리**:
+    
+    *나는 기프티콘을 사용한 사람으로서, 더 이상 사용하지 않는 기프티콘을 관리하기 위해 사용 완료 처리를 하고 싶다.*
+    
+- **인수 조건**:
+    - **Given**: 사용자가 기프티콘 상세 화면을 보고 있습니다.
+    - **When**: 사용자가 `사용 완료` 버튼을 누릅니다.
+    - **Then**: 해당 기프티콘은 ‘사용 완료’ 상태로 표시되고, 일반 목록에서는 제외됩니다.
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### ✅ **요구사항 5: 만료 임박 알림 기능**
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **사용자 스토리**:
+    
+    *나는 기프티콘을 가진 사람으로서, 유효기간이 임박한 기프티콘이 있다는 사실을 알고 싶다.*
+    
+- **인수 조건**:
+    - **Given**: 사용자가 앱에 기프티콘을 등록해 두었습니다.
+    - **When**: 기프티콘의 만료일이 3일 이내로 다가옵니다.
+    - **Then**: 앱은 사용자에게 해당 기프티콘이 곧 만료된다는 푸시 알림을 보냅니다.
+
+---
+
+### **구현 범위**
+
+- 앱의 UI/UX와 기본적인 화면을 보여주는 프로토타입 수준
