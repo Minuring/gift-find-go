@@ -73,10 +73,10 @@ const GiftCardList = () => {
         let expiryMessage = '';
         if (diffDays === 0) {
           expiryMessage = '오늘 만료됩니다!';
-        } else if (diffDays <= 7) {
+        } else if (diffDays > 0 && diffDays <= 7) {
           expiryMessage = `${diffDays}일 후에 만료됩니다!`;
         } else {
-          expiryMessage = `${expiryDate.toLocaleDateString('ko-KR')}에 만료됩니다!`;
+          expiryMessage = `${expiryDate.getFullYear()}년 ${String(expiryDate.getMonth() + 1).padStart(2, '0')}월 ${String(expiryDate.getDate()).padStart(2, '0')}일에 만료됩니다!`;
         }
         
         return `${card.store}의 ${card.name}(이)가 ${expiryMessage}`;
