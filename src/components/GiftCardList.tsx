@@ -66,7 +66,7 @@ const GiftCardList = () => {
 
     if (expiringSoon.length > 0) {
       const messages = expiringSoon.map(card => 
-        `${card.store}의 ${card.name}이 ${new Date(card.expiryDate).toLocaleDateString('ko-KR')}에 만료됩니다!`
+        `${card.store}의 ${card.name}(이)가 ${new Date(card.expiryDate).toLocaleDateString('ko-KR')}에 만료됩니다!`
       );
       setNotifications(messages);
     }
