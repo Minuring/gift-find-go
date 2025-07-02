@@ -61,13 +61,26 @@ const GiftCardList = () => {
       const expiryDate = new Date(card.expiryDate);
       const diffTime = expiryDate.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 3 && diffDays >= 0;
+      return diffDays <= 7 && diffDays >= 0;
     });
 
     if (expiringSoon.length > 0) {
-      const messages = expiringSoon.map(card => 
-        `${card.store}의 ${card.name}(이)가 ${new Date(card.expiryDate).toLocaleDateString('ko-KR')}에 만료됩니다!`
-      );
+      const messages = expiringSoon.map(card => {
+        const expiryDate = new Date(card.expiryDate);
+        const diffTime = expiryDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        let expiryMessage = '';
+        if (diffDays === 0) {
+          expiryMessage = '오늘 만료됩니다!';
+        } else if (diffDays <= 7) {
+          expiryMessage = `${diffDays}일 후에 만료됩니다!`;
+        } else {
+          expiryMessage = `${expiryDate.toLocaleDateString('ko-KR')}에 만료됩니다!`;
+        }
+        
+        return `${card.store}의 ${card.name}(이)가 ${expiryMessage}`;
+      });
       setNotifications(messages);
     }
   };
