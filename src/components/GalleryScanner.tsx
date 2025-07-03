@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Gallery, X, Upload, Check } from "lucide-react";
+import { Images, X, Upload, Check } from "lucide-react";
 import { extractGiftCardInfo, validateGiftCardImage, GiftCardInfo } from '@/utils/imageRecognition';
 
 interface GalleryScannerProps {
@@ -76,7 +76,7 @@ const GalleryScanner = ({ onScanComplete, onCancel }: GalleryScannerProps) => {
         <CardContent>
           {selectedFiles.length === 0 && (
             <div className="text-center py-12">
-              <Gallery className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+              <Images className="h-16 w-16 mx-auto text-gray-400 mb-4" />
               <p className="text-gray-600 mb-6">사진첩에서 기프티콘 이미지들을 선택하세요</p>
               <Button 
                 onClick={() => document.getElementById('gallery-input')?.click()}

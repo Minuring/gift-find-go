@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Upload, Calendar, AlertCircle, Camera, Gallery, Wand2 } from "lucide-react";
+import { ArrowLeft, Upload, Calendar, AlertCircle, Camera, Images, Wand2 } from "lucide-react";
 import { GiftCard as GiftCardType } from "@/types/giftcard";
 import { useToast } from "@/hooks/use-toast";
 import { storeCategories } from '@/utils/storeCategories';
@@ -17,8 +18,10 @@ interface GiftCardRegistrationProps {
   onCancel: () => void;
 }
 
+type RegistrationMode = 'manual' | 'camera' | 'gallery' | 'ai';
+
 const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) => {
-  const [registrationMode, setRegistrationMode] = useState<'manual' | 'camera' | 'gallery' | 'ai'>('manual');
+  const [registrationMode, setRegistrationMode] = useState<RegistrationMode>('manual');
   const [formData, setFormData] = useState({
     name: '',
     store: '',
@@ -266,7 +269,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
           onClick={() => setRegistrationMode('gallery')}
           className="flex flex-col p-4 h-auto"
         >
-          <Gallery className="h-6 w-6 mb-2" />
+          <Images className="h-6 w-6 mb-2" />
           <span className="text-sm">갤러리 검색</span>
         </Button>
       </div>
