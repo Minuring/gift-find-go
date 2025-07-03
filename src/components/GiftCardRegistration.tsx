@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +21,7 @@ type RegistrationMode = 'manual' | 'camera' | 'gallery' | 'ai';
 
 const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) => {
   const [registrationMode, setRegistrationMode] = useState<RegistrationMode>('manual');
+  
   const [formData, setFormData] = useState({
     name: '',
     store: '',
