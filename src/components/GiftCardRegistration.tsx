@@ -1,13 +1,16 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Upload, Calendar, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, Calendar, AlertCircle, Camera, Gallery, Wand2 } from "lucide-react";
 import { GiftCard as GiftCardType } from "@/types/giftcard";
 import { useToast } from "@/hooks/use-toast";
+import { storeCategories } from '@/utils/storeCategories';
+import { extractGiftCardInfo, validateGiftCardImage, GiftCardInfo } from '@/utils/imageRecognition';
+import CameraScanner from './CameraScanner';
+import GalleryScanner from './GalleryScanner';
 
 interface GiftCardRegistrationProps {
   onAdd: (giftCard: Omit<GiftCardType, 'id' | 'createdAt'>) => void;
@@ -15,6 +18,7 @@ interface GiftCardRegistrationProps {
 }
 
 const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) => {
+  const [registrationMode, setRegistrationMode] = useState<'manual' | 'camera' | 'gallery' | 'ai'>('manual');
   const [formData, setFormData] = useState({
     name: '',
     store: '',
@@ -30,10 +34,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
 
   const { toast } = useToast();
 
-  const stores = [
-    '스타벅스', '맥도날드', 'GS25', 'CU', '세븐일레븐', '롯데리아', 
-    '버거킹', 'KFC', '파리바게뜨', '뚜레쥬르', '던킨도너츠', '배스킨라빈스'
-  ];
+  const allStores = storeCategories.flatMap(category => category.stores);
 
   const validateImage = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -136,6 +137,91 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
     }
   };
 
+  const handleAIRegistration = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const isValid = await validateGiftCardImage(file);
+      if (!isValid) {
+        setValidationErrors(prev => ({
+          ...prev,
+          image: '기프티콘 이미지로 적절하지 않은 크기입니다. 다른 이미지를 선택해주세요.'
+        }));
+        return;
+      }
+
+      const info = await extractGiftCardInfo(file);
+      
+      // Fill form with extracted information
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setFormData({
+          name: info.name || '',
+          store: info.store || '',
+          amount: info.amount?.toString() || '',
+          expiryDate: info.expiryDate || '',
+          image: result
+        });
+      };
+      reader.readAsDataURL(file);
+
+      toast({
+        title: "자동 인식 완료",
+        description: "기프티콘 정보가 자동으로 입력되었습니다. 확인 후 수정해주세요."
+      });
+
+    } catch (error) {
+      console.error('AI registration error:', error);
+      toast({
+        title: "인식 실패",
+        description: "기프티콘 정보를 자동으로 인식하지 못했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleScanComplete = (info: GiftCardInfo, imageFile: File) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setFormData({
+        name: info.name || '',
+        store: info.store || '',
+        amount: info.amount?.toString() || '',
+        expiryDate: info.expiryDate || '',
+        image: result
+      });
+    };
+    reader.readAsDataURL(imageFile);
+
+    setRegistrationMode('manual');
+    
+    toast({
+      title: "스캔 완료",
+      description: "기프티콘 정보가 자동으로 입력되었습니다. 확인 후 수정해주세요."
+    });
+  };
+
+  if (registrationMode === 'camera') {
+    return (
+      <CameraScanner 
+        onScanComplete={handleScanComplete}
+        onCancel={() => setRegistrationMode('manual')}
+      />
+    );
+  }
+
+  if (registrationMode === 'gallery') {
+    return (
+      <GalleryScanner 
+        onScanComplete={handleScanComplete}
+        onCancel={() => setRegistrationMode('manual')}
+      />
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="flex items-center mb-6">
@@ -149,129 +235,210 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
         <h1 className="text-2xl font-bold">기프티콘 등록</h1>
       </div>
 
+      {/* Registration Mode Selection */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <Button
+          variant={registrationMode === 'manual' ? 'default' : 'outline'}
+          onClick={() => setRegistrationMode('manual')}
+          className="flex flex-col p-4 h-auto"
+        >
+          <Upload className="h-6 w-6 mb-2" />
+          <span className="text-sm">수동 등록</span>
+        </Button>
+        <Button
+          variant={registrationMode === 'ai' ? 'default' : 'outline'}
+          onClick={() => setRegistrationMode('ai')}
+          className="flex flex-col p-4 h-auto"
+        >
+          <Wand2 className="h-6 w-6 mb-2" />
+          <span className="text-sm">AI 인식</span>
+        </Button>
+        <Button
+          variant={registrationMode === 'camera' ? 'default' : 'outline'}
+          onClick={() => setRegistrationMode('camera')}
+          className="flex flex-col p-4 h-auto"
+        >
+          <Camera className="h-6 w-6 mb-2" />
+          <span className="text-sm">카메라 촬영</span>
+        </Button>
+        <Button
+          variant={registrationMode === 'gallery' ? 'default' : 'outline'}
+          onClick={() => setRegistrationMode('gallery')}
+          className="flex flex-col p-4 h-auto"
+        >
+          <Gallery className="h-6 w-6 mb-2" />
+          <span className="text-sm">갤러리 검색</span>
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>새 기프티콘 정보</CardTitle>
+          <CardTitle>
+            {registrationMode === 'ai' ? 'AI 자동 인식으로 등록' : '새 기프티콘 정보'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 기프티콘 이미지 업로드 */}
-            <div className="space-y-2">
-              <Label>기프티콘 이미지</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                {formData.image ? (
-                  <div className="space-y-4">
-                    <img 
-                      src={formData.image} 
-                      alt="기프티콘 미리보기" 
-                      className="max-h-32 mx-auto rounded"
-                    />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => handleInputChange('image', '')}
-                    >
-                      이미지 변경
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600">기프티콘 이미지를 업로드해주세요</p>
-                    <Button type="button" variant="outline" className="mt-2" onClick={() => document.getElementById('file-input')?.click()}>
-                      파일 선택
-                    </Button>
-                  </>
-                )}
-              </div>
-              {validationErrors.image && (
-                <div className="flex items-center text-red-500 text-sm">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {validationErrors.image}
+            {/* AI Registration Mode */}
+            {registrationMode === 'ai' && (
+              <div className="space-y-2">
+                <Label>기프티콘 이미지 (AI 자동 인식)</Label>
+                <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors bg-purple-50">
+                  <Wand2 className="h-12 w-12 mx-auto text-purple-500 mb-4" />
+                  <p className="text-purple-700 mb-2">AI가 자동으로 기프티콘 정보를 인식합니다</p>
+                  <p className="text-sm text-gray-600 mb-4">사용처, 금액, 만료일을 자동으로 추출합니다</p>
+                  <Button 
+                    type="button" 
+                    onClick={() => document.getElementById('ai-file-input')?.click()}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500"
+                  >
+                    이미지 선택하여 AI 인식 시작
+                  </Button>
                 </div>
-              )}
-              <input
-                id="file-input"
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </div>
-
-            {/* 기프티콘 이름 */}
-            <div className="space-y-2">
-              <Label htmlFor="name">기프티콘 이름 *</Label>
-              <Input 
-                id="name"
-                placeholder="예: 아메리카노, 치킨버거 세트"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-              />
-            </div>
-
-            {/* 사용처 */}
-            <div className="space-y-2">
-              <Label>사용처 *</Label>
-              <Select onValueChange={(value) => handleInputChange('store', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="사용처를 선택하세요" />
-                </SelectTrigger>
-                <SelectContent>
-                  {stores.map(store => (
-                    <SelectItem key={store} value={store}>
-                      {store}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 금액 */}
-            <div className="space-y-2">
-              <Label htmlFor="amount">금액 *</Label>
-              <Input 
-                id="amount"
-                type="number"
-                min="1"
-                max="1000000"
-                step="100"
-                placeholder="10000"
-                value={formData.amount}
-                onChange={(e) => handleInputChange('amount', e.target.value)}
-              />
-              {validationErrors.amount && (
-                <div className="flex items-center text-red-500 text-sm">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {validationErrors.amount}
-                </div>
-              )}
-            </div>
-
-            {/* 만료일 */}
-            <div className="space-y-2">
-              <Label htmlFor="expiryDate">만료일 *</Label>
-              <div className="relative">
-                <Input 
-                  id="expiryDate"
-                  type="date"
-                  min={new Date().toISOString().split('T')[0]}
-                  value={formData.expiryDate}
-                  onChange={(e) => handleInputChange('expiryDate', e.target.value)}
+                <input
+                  id="ai-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAIRegistration}
+                  className="hidden"
                 />
-                <Calendar className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
               </div>
-            </div>
+            )}
 
-            {/* 버튼 */}
-            <div className="flex gap-4 pt-6">
-              <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-                취소
-              </Button>
-              <Button type="submit" className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
-                등록하기
-              </Button>
-            </div>
+            {/* Manual Registration Mode */}
+            {registrationMode === 'manual' && (
+              <>
+                {/* 기프티콘 이미지 업로드 */}
+                <div className="space-y-2">
+                  <Label>기프티콘 이미지</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                    {formData.image ? (
+                      <div className="space-y-4">
+                        <img 
+                          src={formData.image} 
+                          alt="기프티콘 미리보기" 
+                          className="max-h-32 mx-auto rounded"
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => handleInputChange('image', '')}
+                        >
+                          이미지 변경
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                        <p className="text-gray-600">기프티콘 이미지를 업로드해주세요</p>
+                        <Button type="button" variant="outline" className="mt-2" onClick={() => document.getElementById('file-input')?.click()}>
+                          파일 선택
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  {validationErrors.image && (
+                    <div className="flex items-center text-red-500 text-sm">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {validationErrors.image}
+                    </div>
+                  )}
+                  <input
+                    id="file-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Common Form Fields */}
+            {(registrationMode === 'manual' || registrationMode === 'ai') && (
+              <>
+                {/* 기프티콘 이름 */}
+                <div className="space-y-2">
+                  <Label htmlFor="name">기프티콘 이름 *</Label>
+                  <Input 
+                    id="name"
+                    placeholder="예: 아메리카노, 치킨버거 세트"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                  />
+                </div>
+
+                {/* 사용처 */}
+                <div className="space-y-2">
+                  <Label>사용처 *</Label>
+                  <Select onValueChange={(value) => handleInputChange('store', value)} value={formData.store}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="사용처를 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {storeCategories.map(category => (
+                        <div key={category.id}>
+                          <div className="px-2 py-1 text-sm font-medium text-gray-500 bg-gray-50">
+                            {category.icon} {category.name}
+                          </div>
+                          {category.stores.map(store => (
+                            <SelectItem key={store} value={store} className="pl-6">
+                              {store}
+                            </SelectItem>
+                          ))}
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 금액 */}
+                <div className="space-y-2">
+                  <Label htmlFor="amount">금액 *</Label>
+                  <Input 
+                    id="amount"
+                    type="number"
+                    min="1"
+                    max="1000000"
+                    step="100"
+                    placeholder="10000"
+                    value={formData.amount}
+                    onChange={(e) => handleInputChange('amount', e.target.value)}
+                  />
+                  {validationErrors.amount && (
+                    <div className="flex items-center text-red-500 text-sm">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {validationErrors.amount}
+                    </div>
+                  )}
+                </div>
+
+                {/* 만료일 */}
+                <div className="space-y-2">
+                  <Label htmlFor="expiryDate">만료일 *</Label>
+                  <div className="relative">
+                    <Input 
+                      id="expiryDate"
+                      type="date"
+                      min={new Date().toISOString().split('T')[0]}
+                      value={formData.expiryDate}
+                      onChange={(e) => handleInputChange('expiryDate', e.target.value)}
+                    />
+                    <Calendar className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+
+                {/* 버튼 */}
+                <div className="flex gap-4 pt-6">
+                  <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
+                    취소
+                  </Button>
+                  <Button type="submit" className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                    등록하기
+                  </Button>
+                </div>
+              </>
+            )}
           </form>
         </CardContent>
       </Card>
