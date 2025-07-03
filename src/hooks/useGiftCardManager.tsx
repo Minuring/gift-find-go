@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { GiftCard as GiftCardType } from "@/types/giftcard";
 
@@ -19,7 +18,9 @@ export const useGiftCardManager = () => {
         expiryDate: '2025-07-05',
         isUsed: false,
         createdAt: '2025-06-01',
-        qrCode: 'STARBUCKS123456789'
+        qrCode: 'STARBUCKS123456789',
+        ownerId: 'me',
+        storeNearbyNotification: true
       },
       {
         id: '2',
@@ -29,7 +30,9 @@ export const useGiftCardManager = () => {
         expiryDate: '2025-07-03',
         isUsed: false,
         createdAt: '2025-06-15',
-        barcode: '1234567890123'
+        barcode: '1234567890123',
+        ownerId: 'me',
+        storeNearbyNotification: true
       },
       {
         id: '3',
@@ -39,7 +42,9 @@ export const useGiftCardManager = () => {
         expiryDate: '2025-08-15',
         isUsed: true,
         createdAt: '2025-05-20',
-        qrCode: 'GS25GIFT987654321'
+        qrCode: 'GS25GIFT987654321',
+        ownerId: 'me',
+        storeNearbyNotification: true
       }
     ];
     setGiftCards(sampleData);
@@ -80,7 +85,8 @@ export const useGiftCardManager = () => {
     const giftCard: GiftCardType = {
       ...newGiftCard,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      storeNearbyNotification: true
     };
     
     const updatedCards = [...giftCards, giftCard];
@@ -95,6 +101,18 @@ export const useGiftCardManager = () => {
     );
     setGiftCards(updatedCards);
     setSelectedGiftCard(null);
+    checkExpiringGiftCards(updatedCards);
+  };
+
+  const handleStoreNearbyNotificationChange = (id: string, value: boolean) => {
+    const updatedCards = giftCards.map(card =>
+      card.id === id ? { ...card, storeNearbyNotification: value } : card
+    );
+    setGiftCards([...updatedCards]);
+    // selectedGiftCard도 동기화
+    if (selectedGiftCard && selectedGiftCard.id === id) {
+      setSelectedGiftCard({ ...selectedGiftCard, storeNearbyNotification: value });
+    }
     checkExpiringGiftCards(updatedCards);
   };
 
@@ -128,6 +146,7 @@ export const useGiftCardManager = () => {
     usedGiftCards,
     expiredGiftCards,
     handleAddGiftCard,
-    handleMarkAsUsed
+    handleMarkAsUsed,
+    handleStoreNearbyNotificationChange
   };
 };

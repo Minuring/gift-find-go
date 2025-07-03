@@ -13,6 +13,7 @@ export interface GiftCard {
   sharedTo?: string;
   sharedAt?: string;
   from?: string;
+  storeNearbyNotification?: boolean;
 }
 
 export interface Store {

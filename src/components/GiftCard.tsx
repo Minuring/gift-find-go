@@ -6,6 +6,9 @@ import { GiftCard as GiftCardType } from "@/types/giftcard";
 import StoreLogo from './StoreLogo';
 import { useState } from "react";
 import type { Friend } from "../types/friend";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useGiftCardManager } from "@/hooks/useGiftCardManager";
 
 interface GiftCardProps {
   giftCard: GiftCardType;
@@ -21,6 +24,7 @@ const dummyFriends: Friend[] = [
 const GiftCard = ({ giftCard, onViewDetail, onShare }: GiftCardProps) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  const { handleStoreNearbyNotificationChange } = useGiftCardManager();
 
   const getExpiryStatus = () => {
     const today = new Date();
@@ -101,6 +105,17 @@ const GiftCard = ({ giftCard, onViewDetail, onShare }: GiftCardProps) => {
       </div>
       
       <CardContent className="p-4">
+        {/* 주변 매장 알림 스위치 */}
+        <div className="flex items-center mb-2">
+          <Switch
+            id={`store-nearby-notification-${giftCard.id}`}
+            checked={!!giftCard.storeNearbyNotification}
+            onCheckedChange={checked => handleStoreNearbyNotificationChange(giftCard.id, checked)}
+          />
+          <Label htmlFor={`store-nearby-notification-${giftCard.id}`} className="ml-2 text-xs">
+            주변 매장 알림
+          </Label>
+        </div>
         <h3 className="font-semibold text-lg mb-1">{giftCard.name}</h3>
         <p className="text-gray-600 mb-2">{giftCard.store}</p>
         {giftCard.from && (
