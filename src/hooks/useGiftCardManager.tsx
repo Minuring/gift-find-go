@@ -48,33 +48,30 @@ export const useGiftCardManager = () => {
 
   const checkExpiringGiftCards = (cards: GiftCardType[]) => {
     const today = new Date();
-    const expiringSoon = cards.filter(card => {
-      if (card.isUsed) return false;
+    const notifications: string[] = [];
+    
+    cards.forEach(card => {
+      if (card.isUsed) return;
+      
       const expiryDate = new Date(card.expiryDate);
       const diffTime = expiryDate.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 7 && diffDays >= 0;
+      
+      let message = '';
+      if (diffDays === 0) {
+        message = `${card.store}의 ${card.name}이(가) 오늘 만료될 예정입니다!`;
+      } else if (diffDays > 0 && diffDays <= 3) {
+        message = `${card.store}의 ${card.name}이(가) ${diffDays}일 후 만료됩니다!`;
+      } else if (diffDays > 3 && diffDays <= 7) {
+        message = `${card.store}의 ${card.name}이(가) ${diffDays}일 후 만료됩니다!`;
+      }
+      
+      if (message) {
+        notifications.push(message);
+      }
     });
-
-    if (expiringSoon.length > 0) {
-      const messages = expiringSoon.map(card => {
-        const expiryDate = new Date(card.expiryDate);
-        const diffTime = expiryDate.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        let expiryMessage = '';
-        if (diffDays === 0) {
-          expiryMessage = '오늘 만료됩니다!';
-        } else if (diffDays > 0 && diffDays <= 7) {
-          expiryMessage = `${diffDays}일 후에 만료됩니다!`;
-        } else {
-          expiryMessage = `${expiryDate.getFullYear()}년 ${String(expiryDate.getMonth() + 1).padStart(2, '0')}월 ${String(expiryDate.getDate()).padStart(2, '0')}일에 만료됩니다!`;
-        }
-        
-        return `${card.store}의 ${card.name}(이)가 ${expiryMessage}`;
-      });
-      setNotifications(messages);
-    }
+    
+    setNotifications(notifications);
   };
 
   const handleAddGiftCard = (newGiftCard: Omit<GiftCardType, 'id' | 'createdAt'>) => {
@@ -96,10 +93,24 @@ export const useGiftCardManager = () => {
     );
     setGiftCards(updatedCards);
     setSelectedGiftCard(null);
+    checkExpiringGiftCards(updatedCards);
   };
 
-  const activeGiftCards = giftCards.filter(card => !card.isUsed);
+  const today = new Date();
+  
+  const activeGiftCards = giftCards.filter(card => {
+    if (card.isUsed) return false;
+    const expiryDate = new Date(card.expiryDate);
+    return expiryDate >= today;
+  });
+  
   const usedGiftCards = giftCards.filter(card => card.isUsed);
+  
+  const expiredGiftCards = giftCards.filter(card => {
+    if (card.isUsed) return false;
+    const expiryDate = new Date(card.expiryDate);
+    return expiryDate < today;
+  });
 
   return {
     giftCards,
@@ -110,6 +121,7 @@ export const useGiftCardManager = () => {
     notifications,
     activeGiftCards,
     usedGiftCards,
+    expiredGiftCards,
     handleAddGiftCard,
     handleMarkAsUsed
   };

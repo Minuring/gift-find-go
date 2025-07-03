@@ -15,6 +15,7 @@ const GiftCardList = () => {
     notifications,
     activeGiftCards,
     usedGiftCards,
+    expiredGiftCards,
     handleAddGiftCard,
     handleMarkAsUsed
   } = useGiftCardManager();
@@ -47,6 +48,7 @@ const GiftCardList = () => {
       <GiftCardTabs
         activeGiftCards={activeGiftCards}
         usedGiftCards={usedGiftCards}
+        expiredGiftCards={expiredGiftCards}
         onShowRegistration={() => setShowRegistration(true)}
         onViewDetail={setSelectedGiftCard}
       />

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, QrCode } from "lucide-react";
 import { GiftCard as GiftCardType } from "@/types/giftcard";
+import StoreLogo from './StoreLogo';
 
 interface GiftCardProps {
   giftCard: GiftCardType;
@@ -11,51 +12,56 @@ interface GiftCardProps {
 }
 
 const GiftCard = ({ giftCard, onViewDetail }: GiftCardProps) => {
-  const isExpiringSoon = () => {
+  const getExpiryStatus = () => {
     const today = new Date();
     const expiryDate = new Date(giftCard.expiryDate);
     const diffTime = expiryDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 3 && diffDays >= 0;
+    
+    if (diffDays < 0) {
+      return { type: 'expired', message: '만료됨' };
+    } else if (diffDays === 0) {
+      return { type: 'today', message: '오늘 만료 예정' };
+    } else if (diffDays <= 7) {
+      return { type: 'soon', message: `${diffDays}일 후 만료됨` };
+    }
+    return { type: 'normal', message: '' };
   };
 
-  const isExpired = () => {
-    const today = new Date();
-    const expiryDate = new Date(giftCard.expiryDate);
-    return expiryDate < today;
-  };
+  const expiryStatus = getExpiryStatus();
 
   return (
     <Card className={`overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 ${
       giftCard.isUsed ? 'opacity-60 bg-gray-50' : ''
     }`}>
       <div className="relative">
-        {giftCard.image && (
-          <div className="h-32 bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center">
+        <div className="h-32 bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center">
+          {giftCard.image ? (
             <img 
               src={giftCard.image} 
               alt={giftCard.name}
               className="h-16 w-16 object-contain bg-white rounded-lg p-2"
             />
-          </div>
-        )}
-        {!giftCard.image && (
-          <div className="h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center">
-            <div className="text-white text-2xl font-bold">
-              {giftCard.store.charAt(0)}
-            </div>
-          </div>
-        )}
+          ) : (
+            <StoreLogo store={giftCard.store} size="md" />
+          )}
+        </div>
         
-        {isExpiringSoon() && !giftCard.isUsed && (
-          <Badge className="absolute top-2 right-2 bg-orange-500 hover:bg-orange-600">
-            곧 만료
+        {expiryStatus.type === 'today' && !giftCard.isUsed && (
+          <Badge className="absolute top-2 right-2 bg-red-500 hover:bg-red-600">
+            {expiryStatus.message}
           </Badge>
         )}
         
-        {isExpired() && !giftCard.isUsed && (
-          <Badge className="absolute top-2 right-2 bg-red-500 hover:bg-red-600">
-            만료됨
+        {expiryStatus.type === 'soon' && !giftCard.isUsed && (
+          <Badge className="absolute top-2 right-2 bg-orange-500 hover:bg-orange-600">
+            {expiryStatus.message}
+          </Badge>
+        )}
+        
+        {expiryStatus.type === 'expired' && !giftCard.isUsed && (
+          <Badge className="absolute top-2 right-2 bg-gray-500">
+            {expiryStatus.message}
           </Badge>
         )}
         

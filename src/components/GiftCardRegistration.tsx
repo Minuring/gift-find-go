@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Upload, Calendar } from "lucide-react";
+import { ArrowLeft, Upload, Calendar, AlertCircle } from "lucide-react";
 import { GiftCard as GiftCardType } from "@/types/giftcard";
+import { useToast } from "@/hooks/use-toast";
 
 interface GiftCardRegistrationProps {
   onAdd: (giftCard: Omit<GiftCardType, 'id' | 'createdAt'>) => void;
@@ -21,17 +22,75 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
     expiryDate: '',
     image: ''
   });
+  
+  const [validationErrors, setValidationErrors] = useState({
+    image: '',
+    amount: ''
+  });
+
+  const { toast } = useToast();
 
   const stores = [
     '스타벅스', '맥도날드', 'GS25', 'CU', '세븐일레븐', '롯데리아', 
     '버거킹', 'KFC', '파리바게뜨', '뚜레쥬르', '던킨도너츠', '배스킨라빈스'
   ];
 
+  const validateImage = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        // Basic validation: check if it's a reasonable size for a gift card
+        const isValidSize = img.width >= 100 && img.height >= 100;
+        const hasValidAspectRatio = (img.width / img.height) >= 0.5 && (img.width / img.height) <= 2;
+        
+        if (!isValidSize || !hasValidAspectRatio) {
+          setValidationErrors(prev => ({
+            ...prev,
+            image: '기프티콘 이미지로 적절하지 않은 크기입니다. 다른 이미지를 선택해주세요.'
+          }));
+          resolve(false);
+        } else {
+          setValidationErrors(prev => ({ ...prev, image: '' }));
+          resolve(true);
+        }
+      };
+      img.onerror = () => {
+        setValidationErrors(prev => ({
+          ...prev,
+          image: '유효하지 않은 이미지 파일입니다.'
+        }));
+        resolve(false);
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const validateAmount = (value: string): boolean => {
+    const numValue = parseInt(value);
+    if (isNaN(numValue) || numValue <= 0 || numValue > 1000000) {
+      setValidationErrors(prev => ({
+        ...prev,
+        amount: '1원 이상 1,000,000원 이하의 유효한 금액을 입력해주세요.'
+      }));
+      return false;
+    }
+    setValidationErrors(prev => ({ ...prev, amount: '' }));
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.store || !formData.amount || !formData.expiryDate) {
-      alert('필수 항목을 모두 입력해주세요.');
+      toast({
+        title: "입력 오류",
+        description: "필수 항목을 모두 입력해주세요.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!validateAmount(formData.amount)) {
       return;
     }
 
@@ -45,6 +104,10 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
     };
 
     onAdd(giftCard);
+    toast({
+      title: "등록 완료",
+      description: "기프티콘이 성공적으로 등록되었습니다."
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -52,17 +115,24 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
       ...prev,
       [field]: value
     }));
+
+    if (field === 'amount' && value) {
+      validateAmount(value);
+    }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        handleInputChange('image', result);
-      };
-      reader.readAsDataURL(file);
+      const isValid = await validateImage(file);
+      if (isValid) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          handleInputChange('image', result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -107,13 +177,19 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
                 ) : (
                   <>
                     <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600">이미지를 드래그하거나 클릭하여 업로드</p>
+                    <p className="text-gray-600">기프티콘 이미지를 업로드해주세요</p>
                     <Button type="button" variant="outline" className="mt-2" onClick={() => document.getElementById('file-input')?.click()}>
                       파일 선택
                     </Button>
                   </>
                 )}
               </div>
+              {validationErrors.image && (
+                <div className="flex items-center text-red-500 text-sm">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors.image}
+                </div>
+              )}
               <input
                 id="file-input"
                 type="file"
@@ -157,11 +233,19 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
               <Input 
                 id="amount"
                 type="number"
-                step="1000"
+                min="1"
+                max="1000000"
+                step="100"
                 placeholder="10000"
                 value={formData.amount}
                 onChange={(e) => handleInputChange('amount', e.target.value)}
               />
+              {validationErrors.amount && (
+                <div className="flex items-center text-red-500 text-sm">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {validationErrors.amount}
+                </div>
+              )}
             </div>
 
             {/* 만료일 */}
@@ -171,6 +255,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
                 <Input 
                   id="expiryDate"
                   type="date"
+                  min={new Date().toISOString().split('T')[0]}
                   value={formData.expiryDate}
                   onChange={(e) => handleInputChange('expiryDate', e.target.value)}
                 />
