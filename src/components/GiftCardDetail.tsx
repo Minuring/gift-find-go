@@ -27,9 +27,10 @@ const GiftCardDetail = ({ giftCard, onBack, onMarkAsUsed }: GiftCardDetailProps)
   };
 
   const isExpired = () => {
-    const today = new Date();
+    const now = new Date();
     const expiryDate = new Date(giftCard.expiryDate);
-    return expiryDate < today;
+    expiryDate.setHours(23, 59, 59, 999); // 만료일의 끝까지 허용
+    return now > expiryDate;
   };
 
   const getDaysUntilExpiry = () => {
