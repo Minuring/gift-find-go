@@ -18,28 +18,6 @@ const GiftCardDetail = ({ giftCard, onBack, onMarkAsUsed }: GiftCardDetailProps)
   const { handleStoreNearbyNotificationChange } = useGiftCardManager();
   const expiryStatus = getExpiryStatus(giftCard.expiryDate, giftCard.isUsed);
 
-  const isExpiringSoon = () => {
-    const today = new Date();
-    const expiryDate = new Date(giftCard.expiryDate);
-    const diffTime = expiryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 3 && diffDays >= 0;
-  };
-
-  const isExpired = () => {
-    const now = new Date();
-    const expiryDate = new Date(giftCard.expiryDate);
-    expiryDate.setHours(23, 59, 59, 999); // 만료일의 끝까지 허용
-    return now > expiryDate;
-  };
-
-  const getDaysUntilExpiry = () => {
-    const today = new Date();
-    const expiryDate = new Date(giftCard.expiryDate);
-    const diffTime = expiryDate.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="flex items-center mb-6">
@@ -140,7 +118,7 @@ const GiftCardDetail = ({ giftCard, onBack, onMarkAsUsed }: GiftCardDetailProps)
             <Button 
               onClick={() => onMarkAsUsed(giftCard.id)}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-              disabled={isExpired()}
+              disabled={(() => { const now = new Date(); const expiryDate = new Date(giftCard.expiryDate); expiryDate.setHours(23, 59, 59, 999); return now > expiryDate; })()}
             >
               <Check className="h-4 w-4 mr-2" />
               사용 완료
