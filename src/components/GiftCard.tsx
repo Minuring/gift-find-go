@@ -14,13 +14,15 @@ interface GiftCardProps {
 const GiftCard = ({ giftCard, onViewDetail }: GiftCardProps) => {
   const getExpiryStatus = () => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const expiryDate = new Date(giftCard.expiryDate);
+    expiryDate.setHours(23, 59, 59, 999);
     const diffTime = expiryDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays < 0) {
       return { type: 'expired', message: '만료됨' };
-    } else if (diffDays === 0) {
+    } else if (diffDays <= 1) {
       return { type: 'today', message: '오늘 만료 예정' };
     } else if (diffDays <= 7) {
       return { type: 'soon', message: `${diffDays}일 후 만료됨` };

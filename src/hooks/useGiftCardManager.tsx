@@ -48,19 +48,21 @@ export const useGiftCardManager = () => {
 
   const checkExpiringGiftCards = (cards: GiftCardType[]) => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to beginning of day for accurate comparison
     const notifications: string[] = [];
     
     cards.forEach(card => {
       if (card.isUsed) return;
       
       const expiryDate = new Date(card.expiryDate);
+      expiryDate.setHours(23, 59, 59, 999); // Set to end of expiry day
       const diffTime = expiryDate.getTime() - today.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
       let message = '';
-      if (diffDays === 0) {
-        message = `${card.store}의 ${card.name}이(가) 오늘 만료될 예정입니다!`;
-      } else if (diffDays > 0 && diffDays <= 3) {
+      if (diffDays <= 1) {
+        message = `${card.store}의 ${card.name}이(가) 오늘 만료 예정입니다!`;
+      } else if (diffDays > 1 && diffDays <= 3) {
         message = `${card.store}의 ${card.name}이(가) ${diffDays}일 후 만료됩니다!`;
       } else if (diffDays > 3 && diffDays <= 7) {
         message = `${card.store}의 ${card.name}이(가) ${diffDays}일 후 만료됩니다!`;
@@ -97,11 +99,13 @@ export const useGiftCardManager = () => {
   };
 
   const today = new Date();
+  today.setHours(23, 59, 59, 999); // Set to end of today for comparison
   
   const activeGiftCards = giftCards.filter(card => {
     if (card.isUsed) return false;
     const expiryDate = new Date(card.expiryDate);
-    return expiryDate >= today;
+    expiryDate.setHours(23, 59, 59, 999); // Set to end of expiry day
+    return expiryDate >= today; // Include cards that expire today
   });
   
   const usedGiftCards = giftCards.filter(card => card.isUsed);
@@ -109,7 +113,8 @@ export const useGiftCardManager = () => {
   const expiredGiftCards = giftCards.filter(card => {
     if (card.isUsed) return false;
     const expiryDate = new Date(card.expiryDate);
-    return expiryDate < today;
+    expiryDate.setHours(23, 59, 59, 999); // Set to end of expiry day
+    return expiryDate < today; // Only cards that expired before today
   });
 
   return {
