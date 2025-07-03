@@ -9,7 +9,6 @@ import { GiftCard as GiftCardType } from "@/types/giftcard";
 import { useToast } from "@/hooks/use-toast";
 import { storeCategories } from '@/utils/storeCategories';
 import { extractGiftCardInfo, validateGiftCardImage, GiftCardInfo } from '@/utils/imageRecognition';
-import CameraScanner from './CameraScanner';
 import GalleryScanner from './GalleryScanner';
 
 interface GiftCardRegistrationProps {
@@ -17,11 +16,11 @@ interface GiftCardRegistrationProps {
   onCancel: () => void;
 }
 
-type RegistrationMode = 'manual' | 'camera' | 'gallery' | 'ai';
+type RegistrationMode = 'gallery' | 'manual';
 
 const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) => {
-  const [registrationMode, setRegistrationMode] = useState<RegistrationMode>('manual');
-  
+  const [registrationMode, setRegistrationMode] = useState<RegistrationMode | null>(null);
+  const [galleryMode, setGalleryMode] = useState<'select' | 'scan' | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     store: '',
@@ -212,163 +211,155 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
     });
   };
 
-  if (registrationMode === 'camera') {
+  if (!registrationMode) {
     return (
-      <CameraScanner 
-        onScanComplete={handleScanComplete}
-        onCancel={() => setRegistrationMode('manual')}
-      />
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="flex items-center mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={onCancel}
+            className="mr-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">기프티콘 등록</h1>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Button
+            onClick={() => setRegistrationMode('gallery')}
+            className="flex flex-col p-8 h-auto text-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+          >
+            <Images className="h-8 w-8 mb-2" />
+            갤러리에서 찾기
+          </Button>
+          <Button
+            onClick={() => setRegistrationMode('manual')}
+            className="flex flex-col p-8 h-auto text-lg"
+          >
+            <Upload className="h-8 w-8 mb-2" />
+            직접 입력하기
+          </Button>
+        </div>
+      </div>
     );
   }
 
-  if (registrationMode === 'gallery') {
+  if (registrationMode === 'gallery' && !galleryMode) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="flex items-center mb-6">
+          <Button variant="ghost" onClick={() => setRegistrationMode(null)} className="mr-4">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">갤러리에서 찾기</h1>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Button
+            onClick={() => setGalleryMode('select')}
+            className="flex flex-col p-8 h-auto text-lg"
+          >
+            <Upload className="h-8 w-8 mb-2" />
+            직접 선택
+          </Button>
+          <Button
+            onClick={() => setGalleryMode('scan')}
+            className="flex flex-col p-8 h-auto text-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+          >
+            <Wand2 className="h-8 w-8 mb-2" />
+            자동 스캔
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (registrationMode === 'gallery' && galleryMode === 'select') {
     return (
       <GalleryScanner 
         onScanComplete={handleScanComplete}
-        onCancel={() => setRegistrationMode('manual')}
+        onCancel={() => setGalleryMode(null)}
+        mode="select"
       />
     );
   }
 
-  // For manual and AI modes, render the form
-  const isManualMode = registrationMode === 'manual';
-  const isAIMode = registrationMode === 'ai';
-  const showFormFields = isManualMode || isAIMode;
+  if (registrationMode === 'gallery' && galleryMode === 'scan') {
+    return (
+      <GalleryScanner 
+        onScanComplete={handleScanComplete}
+        onCancel={() => setGalleryMode(null)}
+        mode="scan"
+      />
+    );
+  }
 
-  return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          onClick={onCancel}
-          className="mr-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">기프티콘 등록</h1>
-      </div>
+  if (registrationMode === 'manual') {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="flex items-center mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={onCancel}
+            className="mr-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">기프티콘 등록</h1>
+        </div>
 
-      {/* Registration Mode Selection */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <Button
-          variant={isManualMode ? 'default' : 'outline'}
-          onClick={() => setRegistrationMode('manual')}
-          className="flex flex-col p-4 h-auto"
-        >
-          <Upload className="h-6 w-6 mb-2" />
-          <span className="text-sm">수동 등록</span>
-        </Button>
-        <Button
-          variant={isAIMode ? 'default' : 'outline'}
-          onClick={() => setRegistrationMode('ai')}
-          className="flex flex-col p-4 h-auto"
-        >
-          <Wand2 className="h-6 w-6 mb-2" />
-          <span className="text-sm">AI 인식</span>
-        </Button>
-        <Button
-          variant={registrationMode === 'camera' ? 'default' : 'outline'}
-          onClick={() => setRegistrationMode('camera')}
-          className="flex flex-col p-4 h-auto"
-        >
-          <Camera className="h-6 w-6 mb-2" />
-          <span className="text-sm">카메라 촬영</span>
-        </Button>
-        <Button
-          variant={registrationMode === 'gallery' ? 'default' : 'outline'}
-          onClick={() => setRegistrationMode('gallery')}
-          className="flex flex-col p-4 h-auto"
-        >
-          <Images className="h-6 w-6 mb-2" />
-          <span className="text-sm">갤러리 검색</span>
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {isAIMode ? 'AI 자동 인식으로 등록' : '새 기프티콘 정보'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* AI Registration Mode */}
-            {isAIMode && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              새 기프티콘 정보
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* 기프티콘 이미지 업로드 */}
               <div className="space-y-2">
-                <Label>기프티콘 이미지 (AI 자동 인식)</Label>
-                <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors bg-purple-50">
-                  <Wand2 className="h-12 w-12 mx-auto text-purple-500 mb-4" />
-                  <p className="text-purple-700 mb-2">AI가 자동으로 기프티콘 정보를 인식합니다</p>
-                  <p className="text-sm text-gray-600 mb-4">사용처, 금액, 만료일을 자동으로 추출합니다</p>
-                  <Button 
-                    type="button" 
-                    onClick={() => document.getElementById('ai-file-input')?.click()}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500"
-                  >
-                    이미지 선택하여 AI 인식 시작
-                  </Button>
+                <Label>기프티콘 이미지</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                  {formData.image ? (
+                    <div className="space-y-4">
+                      <img 
+                        src={formData.image} 
+                        alt="기프티콘 미리보기" 
+                        className="max-h-32 mx-auto rounded"
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => handleInputChange('image', '')}
+                      >
+                        이미지 변경
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <p className="text-gray-600">기프티콘 이미지를 업로드해주세요</p>
+                      <Button type="button" variant="outline" className="mt-2" onClick={() => document.getElementById('file-input')?.click()}>
+                        파일 선택
+                      </Button>
+                    </>
+                  )}
                 </div>
+                {validationErrors.image && (
+                  <div className="flex items-center text-red-500 text-sm">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {validationErrors.image}
+                  </div>
+                )}
                 <input
-                  id="ai-file-input"
+                  id="file-input"
                   type="file"
                   accept="image/*"
-                  onChange={handleAIRegistration}
+                  onChange={handleFileSelect}
                   className="hidden"
                 />
               </div>
-            )}
 
-            {/* Manual Registration Mode */}
-            {isManualMode && (
-              <>
-                {/* 기프티콘 이미지 업로드 */}
-                <div className="space-y-2">
-                  <Label>기프티콘 이미지</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                    {formData.image ? (
-                      <div className="space-y-4">
-                        <img 
-                          src={formData.image} 
-                          alt="기프티콘 미리보기" 
-                          className="max-h-32 mx-auto rounded"
-                        />
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => handleInputChange('image', '')}
-                        >
-                          이미지 변경
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                        <p className="text-gray-600">기프티콘 이미지를 업로드해주세요</p>
-                        <Button type="button" variant="outline" className="mt-2" onClick={() => document.getElementById('file-input')?.click()}>
-                          파일 선택
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                  {validationErrors.image && (
-                    <div className="flex items-center text-red-500 text-sm">
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      {validationErrors.image}
-                    </div>
-                  )}
-                  <input
-                    id="file-input"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Common Form Fields - Show for both manual and AI modes */}
-            {showFormFields && (
+              {/* Common Form Fields - Show for both manual and AI modes */}
               <>
                 {/* 기프티콘 이름 */}
                 <div className="space-y-2">
@@ -463,12 +454,14 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
                   </Button>
                 </div>
               </>
-            )}
-          </form>
-        </CardContent>
-      </Card>
-    </div>
-  );
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default GiftCardRegistration;
