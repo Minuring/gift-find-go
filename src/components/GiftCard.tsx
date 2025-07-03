@@ -9,6 +9,7 @@ import type { Friend } from "../types/friend";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useGiftCardManager } from "@/hooks/useGiftCardManager";
+import { getExpiryStatus } from "@/lib/utils";
 
 interface GiftCardProps {
   giftCard: GiftCardType;
@@ -26,25 +27,7 @@ const GiftCard = ({ giftCard, onViewDetail, onShare }: GiftCardProps) => {
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const { handleStoreNearbyNotificationChange } = useGiftCardManager();
 
-  const getExpiryStatus = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const expiryDate = new Date(giftCard.expiryDate);
-    expiryDate.setHours(23, 59, 59, 999);
-    const diffTime = expiryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) {
-      return { type: 'expired', message: '만료됨' };
-    } else if (diffDays <= 1) {
-      return { type: 'today', message: '오늘 만료 예정' };
-    } else if (diffDays <= 7) {
-      return { type: 'soon', message: `${diffDays}일 후 만료됨` };
-    }
-    return { type: 'normal', message: '' };
-  };
-
-  const expiryStatus = getExpiryStatus();
+  const expiryStatus = getExpiryStatus(giftCard.expiryDate, giftCard.isUsed);
 
   const handleShareClick = () => {
     setShowModal(true);
@@ -99,7 +82,7 @@ const GiftCard = ({ giftCard, onViewDetail, onShare }: GiftCardProps) => {
         
         {giftCard.isUsed && (
           <Badge className="absolute top-2 right-2 bg-gray-500">
-            사용완료
+            {expiryStatus.message}
           </Badge>
         )}
       </div>

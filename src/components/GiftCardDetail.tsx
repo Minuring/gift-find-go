@@ -5,6 +5,8 @@ import { ArrowLeft, Calendar, Check, QrCode } from "lucide-react";
 import { GiftCard as GiftCardType } from "@/types/giftcard";
 import QRCodeDisplay from './QRCodeDisplay';
 import ShareGiftCard from './ShareGiftCard';
+import { getExpiryStatus } from "@/lib/utils";
+import { useGiftCardManager } from "@/hooks/useGiftCardManager";
 
 interface GiftCardDetailProps {
   giftCard: GiftCardType;
@@ -13,6 +15,9 @@ interface GiftCardDetailProps {
 }
 
 const GiftCardDetail = ({ giftCard, onBack, onMarkAsUsed }: GiftCardDetailProps) => {
+  const { handleStoreNearbyNotificationChange } = useGiftCardManager();
+  const expiryStatus = getExpiryStatus(giftCard.expiryDate, giftCard.isUsed);
+
   const isExpiringSoon = () => {
     const today = new Date();
     const expiryDate = new Date(giftCard.expiryDate);
@@ -57,19 +62,14 @@ const GiftCardDetail = ({ giftCard, onBack, onMarkAsUsed }: GiftCardDetailProps)
                 <p className="text-gray-600 mt-1">{giftCard.store}</p>
               </div>
               <div className="text-right">
-                {isExpiringSoon() && !giftCard.isUsed && (
-                  <Badge className="bg-orange-500 hover:bg-orange-600 mb-2">
-                    {getDaysUntilExpiry()}일 후 만료
-                  </Badge>
-                )}
-                {isExpired() && !giftCard.isUsed && (
-                  <Badge className="bg-red-500 hover:bg-red-600 mb-2">
-                    만료됨
-                  </Badge>
-                )}
-                {giftCard.isUsed && (
-                  <Badge className="bg-gray-500 mb-2">
-                    사용완료
+                {expiryStatus.type && expiryStatus.type !== 'normal' && (
+                  <Badge className={
+                    expiryStatus.type === 'today' ? 'bg-red-500 hover:bg-red-600 mb-2' :
+                    expiryStatus.type === 'soon' ? 'bg-orange-500 hover:bg-orange-600 mb-2' :
+                    expiryStatus.type === 'expired' ? 'bg-gray-500 mb-2' :
+                    expiryStatus.type === 'used' ? 'bg-gray-500 mb-2' : ''
+                  }>
+                    {expiryStatus.message}
                   </Badge>
                 )}
               </div>
