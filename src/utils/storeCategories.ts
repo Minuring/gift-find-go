@@ -1,4 +1,3 @@
-
 export interface StoreCategory {
   id: string;
   name: string;
@@ -45,7 +44,7 @@ export const storeCategories: StoreCategory[] = [
   },
   {
     id: 'activity',
-    name: '액티비티',
+    name: '문화/여가',
     stores: ['CGV', '롯데시네마', '메가박스', '노래방', 'PC방'],
     icon: '🎬'
   }

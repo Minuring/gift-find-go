@@ -1,4 +1,3 @@
-
 export interface GiftCard {
   id: string;
   name: string;
@@ -10,6 +9,9 @@ export interface GiftCard {
   qrCode?: string;
   isUsed: boolean;
   createdAt: string;
+  ownerId: string;
+  sharedTo?: string;
+  sharedAt?: string;
 }
 
 export interface Store {

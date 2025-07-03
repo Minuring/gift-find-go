@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,23 @@ import { useToast } from "@/hooks/use-toast";
 
 interface SettingsProps {
   onClose: () => void;
+}
+
+const KAKAO_APP_KEY = "카카오_자바스크립트_키_여기에_입력";
+
+declare global {
+  interface Window {
+    Kakao: any;
+  }
+}
+
+function loadKakaoScript() {
+  if (document.getElementById("kakao-sdk")) return;
+  const script = document.createElement("script");
+  script.id = "kakao-sdk";
+  script.src = "https://developers.kakao.com/sdk/js/kakao.js";
+  script.async = true;
+  document.body.appendChild(script);
 }
 
 const Settings = ({ onClose }: SettingsProps) => {
@@ -26,6 +42,16 @@ const Settings = ({ onClose }: SettingsProps) => {
     setApiKey(savedApiKey);
   }, []);
 
+  useEffect(() => {
+    loadKakaoScript();
+    const timer = setTimeout(() => {
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        window.Kakao.init(KAKAO_APP_KEY);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleSave = () => {
     if (ocrProvider && apiKey) {
       localStorage.setItem('ocr_provider', ocrProvider);
@@ -40,6 +66,59 @@ const Settings = ({ onClose }: SettingsProps) => {
         description: "OCR 제공업체와 API 키를 모두 입력해주세요.",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleKakaoLogin = () => {
+    if (!window.Kakao) {
+      alert("카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+    window.Kakao.Auth.login({
+      scope: "profile_nickname,account_email,friends",
+      success: function (authObj) {
+        // 로그인 성공 시 처리
+        console.log("카카오 로그인 성공:", authObj);
+        // 사용자 정보 가져오기
+        window.Kakao.API.request({
+          url: "/v2/user/me",
+          success: function (userRes: any) {
+            console.log("카카오 사용자 정보:", userRes);
+            // 친구 목록 가져오기
+            window.Kakao.API.request({
+              url: "/v1/api/talk/friends",
+              success: function (friendsRes: any) {
+                console.log("카카오 친구 목록:", friendsRes);
+                // TODO: 서비스 가입자와 매칭 및 자동 친구 등록 구현
+              },
+              fail: function (err: any) {
+                alert("카카오 친구 목록 불러오기 실패: " + JSON.stringify(err));
+              },
+            });
+          },
+          fail: function (err: any) {
+            alert("카카오 사용자 정보 불러오기 실패: " + JSON.stringify(err));
+          },
+        });
+      },
+      fail: function (err) {
+        alert(JSON.stringify(err));
+      },
+    });
+  };
+
+  const handleContactSync = async () => {
+    if ('contacts' in navigator && 'ContactsManager' in window) {
+      try {
+        // 연락처에서 이름, 전화번호, 이메일만 요청
+        const contacts = await (navigator as any).contacts.select(['name', 'tel', 'email'], { multiple: true });
+        console.log('가져온 연락처:', contacts);
+        // TODO: 서비스 가입자와 매칭 및 자동 친구 등록 구현
+      } catch (err) {
+        alert('연락처 접근이 거부되었거나 오류가 발생했습니다.');
+      }
+    } else {
+      alert('이 브라우저에서는 주소록 연동 기능이 지원되지 않습니다.');
     }
   };
 
@@ -119,6 +198,36 @@ const Settings = ({ onClose }: SettingsProps) => {
               취소
             </Button>
           </div>
+
+          <button
+            onClick={handleKakaoLogin}
+            style={{
+              background: "#FEE500",
+              color: "#191600",
+              border: "none",
+              borderRadius: 6,
+              padding: "10px 20px",
+              fontWeight: "bold",
+              marginTop: 16,
+            }}
+          >
+            카카오로 로그인
+          </button>
+          <button
+            onClick={handleContactSync}
+            style={{
+              background: "#4F8A10",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              padding: "10px 20px",
+              fontWeight: "bold",
+              marginTop: 16,
+              marginLeft: 8,
+            }}
+          >
+            주소록 연동
+          </button>
         </CardContent>
       </Card>
     </div>
