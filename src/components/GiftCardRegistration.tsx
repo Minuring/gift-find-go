@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -225,6 +226,11 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
     );
   }
 
+  // For manual and AI modes, render the form
+  const isManualMode = registrationMode === 'manual';
+  const isAIMode = registrationMode === 'ai';
+  const showFormFields = isManualMode || isAIMode;
+
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="flex items-center mb-6">
@@ -241,7 +247,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
       {/* Registration Mode Selection */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <Button
-          variant={registrationMode === 'manual' ? 'default' : 'outline'}
+          variant={isManualMode ? 'default' : 'outline'}
           onClick={() => setRegistrationMode('manual')}
           className="flex flex-col p-4 h-auto"
         >
@@ -249,7 +255,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
           <span className="text-sm">수동 등록</span>
         </Button>
         <Button
-          variant={registrationMode === 'ai' ? 'default' : 'outline'}
+          variant={isAIMode ? 'default' : 'outline'}
           onClick={() => setRegistrationMode('ai')}
           className="flex flex-col p-4 h-auto"
         >
@@ -277,13 +283,13 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
       <Card>
         <CardHeader>
           <CardTitle>
-            {registrationMode === 'ai' ? 'AI 자동 인식으로 등록' : '새 기프티콘 정보'}
+            {isAIMode ? 'AI 자동 인식으로 등록' : '새 기프티콘 정보'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* AI Registration Mode */}
-            {registrationMode === 'ai' && (
+            {isAIMode && (
               <div className="space-y-2">
                 <Label>기프티콘 이미지 (AI 자동 인식)</Label>
                 <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors bg-purple-50">
@@ -309,7 +315,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
             )}
 
             {/* Manual Registration Mode */}
-            {registrationMode === 'manual' && (
+            {isManualMode && (
               <>
                 {/* 기프티콘 이미지 업로드 */}
                 <div className="space-y-2">
@@ -357,8 +363,8 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
               </>
             )}
 
-            {/* Common Form Fields - Only show for manual and ai modes */}
-            {(registrationMode === 'manual' || registrationMode === 'ai') && (
+            {/* Common Form Fields - Show for both manual and AI modes */}
+            {showFormFields && (
               <>
                 {/* 기프티콘 이름 */}
                 <div className="space-y-2">
