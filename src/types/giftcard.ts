@@ -12,6 +12,7 @@ export interface GiftCard {
   ownerId: string;
   sharedTo?: string;
   sharedAt?: string;
+  from?: string;
 }
 
 export interface Store {

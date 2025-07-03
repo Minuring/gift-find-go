@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +27,8 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
     store: '',
     amount: '',
     expiryDate: '',
-    image: ''
+    image: '',
+    from: ''
   });
   
   const [validationErrors, setValidationErrors] = useState({
@@ -105,7 +105,9 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
       amount: parseInt(formData.amount),
       expiryDate: formData.expiryDate,
       image: formData.image || undefined,
-      isUsed: false
+      isUsed: false,
+      from: formData.from,
+      ownerId: 'me'
     };
 
     onAdd(giftCard);
@@ -166,7 +168,8 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
           store: info.store || '',
           amount: info.amount?.toString() || '',
           expiryDate: info.expiryDate || '',
-          image: result
+          image: result,
+          from: ''
         });
       };
       reader.readAsDataURL(file);
@@ -195,7 +198,8 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
         store: info.store || '',
         amount: info.amount?.toString() || '',
         expiryDate: info.expiryDate || '',
-        image: result
+        image: result,
+        from: ''
       });
     };
     reader.readAsDataURL(imageFile);
@@ -435,6 +439,18 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
                     />
                     <Calendar className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
                   </div>
+                </div>
+
+                {/* 누구에게 받았나요? */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">누구에게 받았나요? <span className="text-xs text-gray-400">(선택 사항)</span></label>
+                  <input
+                    type="text"
+                    className="w-full border rounded px-3 py-2 text-sm"
+                    placeholder="ex) 엄마, 친구, 홍길동 등"
+                    value={formData.from}
+                    onChange={e => handleInputChange('from', e.target.value)}
+                  />
                 </div>
 
                 {/* 버튼 */}

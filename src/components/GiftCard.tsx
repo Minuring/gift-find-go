@@ -103,6 +103,9 @@ const GiftCard = ({ giftCard, onViewDetail, onShare }: GiftCardProps) => {
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-1">{giftCard.name}</h3>
         <p className="text-gray-600 mb-2">{giftCard.store}</p>
+        {giftCard.from && (
+          <div className="text-xs text-gray-500 mt-1">{giftCard.from}에게 받음.</div>
+        )}
         <p className="text-xl font-bold text-primary mb-3">
           {giftCard.amount.toLocaleString()}원
         </p>
