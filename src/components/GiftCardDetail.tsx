@@ -1,10 +1,10 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, Check, QrCode } from "lucide-react";
 import { GiftCard as GiftCardType } from "@/types/giftcard";
 import QRCodeDisplay from './QRCodeDisplay';
+import ShareGiftCard from './ShareGiftCard';
 
 interface GiftCardDetailProps {
   giftCard: GiftCardType;
@@ -129,17 +129,23 @@ const GiftCardDetail = ({ giftCard, onBack, onMarkAsUsed }: GiftCardDetailProps)
           </Card>
         )}
 
-        {/* 사용 완료 버튼 */}
-        {!giftCard.isUsed && (
-          <Button 
-            onClick={() => onMarkAsUsed(giftCard.id)}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-            disabled={isExpired()}
-          >
-            <Check className="h-4 w-4 mr-2" />
-            사용 완료
-          </Button>
-        )}
+        {/* 공유 및 사용 완료 버튼 */}
+        <div className="space-y-3">
+          {/* 공유 기능 */}
+          <ShareGiftCard giftCard={giftCard} />
+          
+          {/* 사용 완료 버튼 */}
+          {!giftCard.isUsed && (
+            <Button 
+              onClick={() => onMarkAsUsed(giftCard.id)}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+              disabled={isExpired()}
+            >
+              <Check className="h-4 w-4 mr-2" />
+              사용 완료
+            </Button>
+          )}
+        </div>
 
         {/* 사용 완료된 기프티콘 정보 */}
         {giftCard.isUsed && (

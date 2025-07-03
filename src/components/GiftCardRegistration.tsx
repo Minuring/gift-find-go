@@ -357,7 +357,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
               </>
             )}
 
-            {/* Common Form Fields */}
+            {/* Common Form Fields - Only show for manual and ai modes */}
             {(registrationMode === 'manual' || registrationMode === 'ai') && (
               <>
                 {/* 기프티콘 이름 */}

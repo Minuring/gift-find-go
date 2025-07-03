@@ -1,12 +1,15 @@
 
+import { useState } from 'react';
 import GiftCardRegistration from './GiftCardRegistration';
 import GiftCardDetail from './GiftCardDetail';
 import GiftCardHeader from './GiftCardHeader';
 import ExpiryNotifications from './ExpiryNotifications';
 import GiftCardTabs from './GiftCardTabs';
+import Settings from './Settings';
 import { useGiftCardManager } from '@/hooks/useGiftCardManager';
 
 const GiftCardList = () => {
+  const [showSettings, setShowSettings] = useState(false);
   const {
     showRegistration,
     setShowRegistration,
@@ -19,6 +22,10 @@ const GiftCardList = () => {
     handleAddGiftCard,
     handleMarkAsUsed
   } = useGiftCardManager();
+
+  if (showSettings) {
+    return <Settings onClose={() => setShowSettings(false)} />;
+  }
 
   if (showRegistration) {
     return (
@@ -41,7 +48,10 @@ const GiftCardList = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <GiftCardHeader onShowRegistration={() => setShowRegistration(true)} />
+      <GiftCardHeader 
+        onShowRegistration={() => setShowRegistration(true)}
+        onShowSettings={() => setShowSettings(true)}
+      />
       
       <ExpiryNotifications notifications={notifications} />
 
