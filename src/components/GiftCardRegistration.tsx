@@ -70,7 +70,7 @@ const GiftCardRegistration = ({ onAdd, onCancel }: GiftCardRegistrationProps) =>
   };
 
   const validateAmount = (value: string): boolean => {
-    const numValue = parseInt(value);
+    const numValue = Number(value.trim());
     if (isNaN(numValue) || numValue <= 0 || numValue > 1000000) {
       setValidationErrors(prev => ({
         ...prev,
